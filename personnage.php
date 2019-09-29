@@ -4,10 +4,20 @@ require __DIR__ . "/vendor/autoload.php";
 ## ETAPE 0
 
 ## CONNECTEZ VOUS A VOTRE BASE DE DONNEE
+try{
+    $pdo = new PDO('mysql:host=127.0.0.1;dbname=renduphp', "root", "");
+} catch (Exception $e){
+    echo "erreur de connection à la base de donnée";
+}
+
 
 ## ETAPE 1
 
 ## RECUPERER TOUT LES PERSONNAGES CONTENU DANS LA TABLE personnages
+$showperso=$pdo->prepare('SELECT * FROM personnages');
+$showperso->execute();
+$show = $showperso->fetchAll(PDO::FETCH_ASSOC);
+
 
 ## ETAPE 2
 
@@ -21,6 +31,9 @@ require __DIR__ . "/vendor/autoload.php";
 ## LORSQUE L'ON APPUIE SUR LE BOUTTON "STARS"
 
 ## ON SOUMET UN FORMULAIRE QUI METS A JOURS LE PERSONNAGE CORRESPONDANT (CELUI SUR LEQUEL ON A CLIQUER) EN INCREMENTANT LA COLUMN STARS DU PERSONNAGE DANS LA BASE DE DONNEE
+
+
+
 
 #######################
 ## ETAPE 4
@@ -50,6 +63,40 @@ require __DIR__ . "/vendor/autoload.php";
 <div class="w-100 mt-5">
 
 </div>
+<?php if (!empty($show)){
+    foreach ($show as $perso){
+        if(isset($_POST["stars". $perso["id"]])){
+            $perso["stars"]++;
+            $addStars= $pdo->prepare('UPDATE personnages SET stars=:stars WHERE name=:name');
+            $jeveuxdesstars = $addStars->execute([":stars"=>$perso["stars"], ":name"=>$perso["name"]]);
+            echo $perso["name"]." a gagné 1 étoile <br>";
+
+        }
+        ?>
+
+        <tr>
+            <td>Nom : <?php echo $perso["name"]; ?></td><br>
+            <td>ATK : <?php echo $perso["atk"]; ?></td><br>
+            <td>PV : <?php echo $perso["pv"]; ?></td><br>
+            <td>Stars : <?php if($perso["stars"]==0){
+                        echo "il n'y a pas d'etoiles pour le moment";
+                }
+                else{
+                    echo $perso["stars"];
+                }?></td><br>
+            <form method="POST">
+                <button name="stars<?php echo $perso["id"] ?>">Stars</button>
+            </form>
+
+
+
+
+        </tr>
+        <br><br><br><?php
+    }
+
+
+} ?>
 
 </body>
 </html>
